@@ -47,6 +47,24 @@ burnout_score = int(burnout_raw * 100)
 
 # -------- STATUS --------
 
+if burnout_score < 35:
+    status = "Low"
+    color = "🟢"
+    message = "You're doing well! Keep maintaining your balance."
+elif burnout_score < 70:
+    status = "Moderate"
+    color = "🟡"
+    message = "You're starting to feel the pressure. Take small breaks."
+else:
+    status = "High"
+    color = "🔴"
+    message = "High risk of burnout. You should slow down and recharge."
+
+
+st.markdown(f"## Burnout Status: {color} **{status}**")
+st.info(message)
+
+
 
 
 
