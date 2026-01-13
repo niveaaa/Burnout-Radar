@@ -71,6 +71,24 @@ st.info(message)
 
 
 # -------- SAVE HISTORY --------
+today = datetime.date.today()
+
+new_entry = {
+    "date": today,
+    "burnout": burnout_score
+}
+
+# Load existing data
+try:
+    history = pd.read_csv("burnout_history.csv")
+except FileNotFoundError:
+    history = pd.DataFrame(columns=["date", "burnout"])
+
+# Add today’s entry
+history = pd.concat([history, pd.DataFrame([new_entry])], ignore_index=True)
+
+# Save back
+history.to_csv("burnout_history.csv", index=False)
 
 
 
@@ -78,8 +96,43 @@ st.info(message)
 
 
 # -------- GRAPH --------
+# -------- PIE CHART --------
+# -------- PIE CHART (FIXED) --------
+import matplotlib.pyplot as plt
+
+st.subheader("🥧 Burnout Risk Breakdown")
+
+healthy = max(0, 100 - burnout_score)
+risk = burnout_score
+stress = min(risk, 70)
+burnout = max(0, risk - 70)
+
+labels = ["Healthy Zone", "Stress Zone", "Burnout Zone"]
+sizes = [healthy, stress, burnout]
+
+# Remove zero-value parts
+filtered = [(l, s) for l, s in zip(labels, sizes) if s > 0]
+labels, sizes = zip(*filtered)
+
+fig, ax = plt.subplots()
+ax.pie(sizes, labels=labels, autopct="%1.1f%%", startangle=90)
+ax.axis("equal")
+
+st.pyplot(fig)
 
 
+
+# -------- LINE CHART --------
+st.subheader("📈 Burnout Trend Over Time")
+
+if not history.empty:
+    history["date"] = pd.to_datetime(history["date"])
+
+    st.line_chart(
+        history.set_index("date")["burnout"]
+    )
+else:
+    st.write("No data yet. Start tracking today!")
 
 
 # -------- AI EXPLANATION --------
