@@ -11,15 +11,21 @@ st.set_page_config(page_title="Burnout Radar", layout="centered")
 st.title("🧠 Burnout Radar")
 st.subheader("Predict burnout before it hits")
 
-# -------- SIDEBAR INPUTS --------
-st.sidebar.header("Daily Inputs")
+# -------- INPUTS -----------
 
-sleep = st.sidebar.slider("Sleep (hours)", 0.0, 12.0, 7.0)
-screen = st.sidebar.slider("Screen Time (hours)", 0.0, 16.0, 6.0)
-tasks = st.sidebar.slider("Number of tasks today", 0, 10, 3)
-mood = st.sidebar.slider("Mood (1 = terrible, 5 = great)", 1, 5, 3)
+st.markdown("### Enter today’s data")
 
-if st.sidebar.button("😈 Simulate Bad Day"):
+col1, col2 = st.columns(2)
+
+with col1:
+    sleep = st.slider("😴 Sleep (hours)", 0.0, 12.0, 7.0)
+    screen = st.slider("📱 Screen Time (hours)", 0.0, 16.0, 6.0)
+
+with col2:
+    tasks = st.slider("📋 Tasks today", 0, 10, 3)
+    mood = st.slider("🙂 Mood (1 = terrible, 5 = great)", 1, 5, 3)
+
+if st.button("😈 Simulate Bad Day"):
     sleep = 4.0
     screen = 10.0
     tasks = 7
@@ -88,6 +94,8 @@ if st.session_state.last_saved != today:
 st.subheader("📊 Burnout Insights")
 
 tab1, tab2 = st.tabs(["🥧 Breakdown", "📈 Trend"])
+
+# ----------- CHARTS ---------
 
 with tab1:
     st.subheader("Burnout Over Time")
