@@ -119,6 +119,22 @@ if not history.empty:
 else:
     st.write("No data yet.")
 
+# -------- WHAT IF SIMULATION --------
+
+st.subheader("🧪 What if I slept 1 hour more?")
+
+if st.button("Simulate Better Sleep"):
+    improved_sleep = min(8, sleep + 1)
+    new_sleep_score = max(0, (8 - improved_sleep) / 8)
+    improved_burnout = (
+        0.35 * (new_sleep_score ** 1.5) +
+        0.25 * screen_penalty +
+        0.25 * task_score +
+        0.15 * mood_score
+    ) * 100
+
+    st.success(f"Your burnout would drop to {int(improved_burnout)}")
+
 # -------- AI EXPLANATION --------
 st.subheader("Why is your burnout like this?")
 
@@ -135,3 +151,4 @@ if st.button("Get AI Explanation"):
     """
 
     # --- OPENAI INTEGRATION ----
+    
