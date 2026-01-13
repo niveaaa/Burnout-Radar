@@ -85,46 +85,48 @@ if st.session_state.last_saved != today:
     history.to_csv("burnout_history.csv", index=False)
     st.session_state.last_saved = today
 
-# -------- PIE CHART --------
+st.subheader("📊 Burnout Insights")
 
-st.subheader("🥧 Burnout Risk Breakdown")
+tab1, tab2 = st.tabs(["🥧 Breakdown", "📈 Trend"])
 
-healthy = max(0, 100 - burnout_score)
-stress = min(burnout_score, 70)
-burnout = max(0, burnout_score - 70)
+with tab1:
+    st.subheader("Burnout Over Time")
 
-labels = ["Functioning", "Overloaded", "Burnout"]
-sizes = [healthy, stress, burnout]
+    if not history.empty:
+        history["date"] = pd.to_datetime(history["date"])
+        st.line_chart(history.set_index("date")["burnout"])
 
-filtered = [(l, s) for l, s in zip(labels, sizes) if s > 0]
-labels, sizes = zip(*filtered)
+        if len(history) >= 3:
+            trend = history["burnout"].diff().mean()
+            tomorrow = min(100, max(0, burnout_score + trend))
+            st.metric("Tomorrow’s predicted burnout", int(tomorrow))
+    else:
+        st.write("No data yet.")
 
-fig, ax = plt.subplots(figsize=(1.75, 1.75))
-ax.pie(
-    sizes,
-    labels=labels,
-    autopct="%1.1f%%",
-    startangle=90,
-    textprops={"fontsize": 8}
-)
-ax.axis("equal")
-st.pyplot(fig)
+with tab2:
+    st.subheader("Burnout Breakdown")
 
-# -------- LINE CHART --------
+    healthy = max(0, 100 - burnout_score)
+    stress = min(burnout_score, 70)
+    burnout = max(0, burnout_score - 70)
 
-st.subheader("📈 Burnout Trend Over Time")
+    labels = ["Functioning", "Overloaded", "Burnout"]
+    sizes = [healthy, stress, burnout]
 
-if not history.empty:
-    history["date"] = pd.to_datetime(history["date"])
-    st.line_chart(history.set_index("date")["burnout"])
+    filtered = [(l, s) for l, s in zip(labels, sizes) if s > 0]
+    labels, sizes = zip(*filtered)
 
-    if len(history) >= 3:
-        trend = history["burnout"].diff().mean()
-        tomorrow = min(100, max(0, burnout_score + trend))
-        st.metric("Tomorrow’s predicted burnout", int(tomorrow))
-else:
-    st.write("No data yet.")
-
+    fig, ax = plt.subplots(figsize=(1.75, 1.75))
+    ax.pie(
+        sizes,
+        labels=labels,
+        autopct="%1.0f%%",
+        startangle=90,
+        textprops={"fontsize": 6}
+    )
+    ax.axis("equal")
+    st.pyplot(fig)
+    
 # -------- WHAT IF SIMULATION --------
 
 st.subheader("🧪 What if I slept 1 hour more?")
