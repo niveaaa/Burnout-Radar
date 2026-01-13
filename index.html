@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Burnout Radar Dashboard</title>
+
+  
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="wrap">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+  <div class="brand">Burnout</div>
+  <div class="side-icons">
+    <a href="index.html" class="icon" title="Dashboard">🏠</a>
+    <a href="assignments.html" class="icon" title="Assignments">📊</a>
+    <a href="settings.html" class="icon" title="Settings">⚙️</a>
+  </div>
+</aside>
+
+
+  <main>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-top">
+        <div class="hero-row">
+          <div class="profile-pic">
+            <img src="profile.png" alt="profile">
+          </div>
+          <div>
+            <div class="hero-name">Good Day, Simi!</div>
+            <div class="hero-role">User · Student</div>
+          </div>
+        </div>
+
+        <div id="current-datetime" class="hero-datetime"></div>
+      </div>
+
+      <div id="current-day" class="hero-day"></div>
+    </section>
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="card"><h4>SLEEP</h4><div class="val">7 hrs</div></div>
+      <div class="card"><h4>SCREEN TIME</h4><div class="val">5 hrs</div></div>
+      <div class="card"><h4>WORKLOAD</h4><div class="val">High</div></div>
+    </div>
+
+
+   <script>
+const params = new URLSearchParams(window.location.search);
+const urlUser = params.get("user");
+
+if (urlUser) {
+  localStorage.setItem("username", urlUser);
+}
+
+const storedUser = localStorage.getItem("username");
+</script>
+
+
+<br>
+    <iframe id="aiFrame" style="width:100%;height:600px;border:none;border-radius: 20px;"></iframe>
+
+    <script>
+const iframe = document.getElementById("aiFrame");
+
+if (storedUser) {
+  iframe.src = "http://localhost:8501?user=" + encodeURIComponent(storedUser);
+} else {
+  iframe.src = "http://localhost:8501";
+}
+</script>
+
+
+
+
+
+    <div class="lower">
+
+      <!-- BURNOUT -->
+      <div class="card burnout">
+        <h4>🔥 BURNOUT RISK SCORE</h4>
+        <div class="burnout-body">
+          <div class="circle">62%</div>
+          <div>
+            <h2>Moderate Risk</h2>
+            <p>You’re showing early signs of burnout. Reduce cognitive load today.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALENDAR + GOALS -->
+      <div class="dual">
+
+        <!-- GOOGLE CALENDAR -->
+        <div class="card">
+          <h4>📅 GOOGLE CALENDAR</h4>
+          <div class="calendar-embed">
+            <iframe
+              src="https://calendar.google.com/calendar/embed?height=420&ctz=Asia%2FKolkata&showTitle=0&showTabs=0&showCalendars=0"
+              frameborder="0"
+              scrolling="no">
+            </iframe>
+          </div>
+        </div>
+
+        <!-- GOALS -->
+        <div class="card">
+          <h4>🎯 TODAY’S GOALS</h4>
+
+          <div class="goal">
+            <span class="dot blue"></span>
+            <div>
+              <b>Complete your assignment</b>
+              <div>Before deadline approaches</div>
+            </div>
+          </div>
+
+          <div class="goal">
+            <span class="dot pink"></span>
+            <div>
+              <b>Reduce screen time</b>
+              <div>Target: 4.5 hours</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+
+<script src="script.js"></script>
+</body>
+</html>
