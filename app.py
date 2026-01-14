@@ -4,6 +4,11 @@ import json
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+import google.generativeai as genai
+import os
+
+genai.configure(api_key="AIzaSyDPvqIpXxMrjtJ1g2EGZurLDRlZsb5aSAg")
 
 # -------- FIREBASE --------
 import firebase_admin
@@ -166,3 +171,48 @@ if st.button("Simulate Better Sleep"):
     ) * 100
 
     st.success(f"Your burnout would drop to {int(improved_burnout)}")
+
+# -------- USER CONTEXT INPUT --------
+st.markdown("### 📝 Today’s workload / pressure context")
+
+user_context = st.text_area(
+    "Briefly describe today’s stress, deadlines, exams, or anything affecting you",
+    placeholder="Example: 2 assignments due, poor sleep, continuous screen time, exam anxiety",
+    height=120
+)
+
+# -------- AI EXPLANATION --------
+st.subheader("🤖 AI Burnout Explanation & Suggestions")
+
+# User-written context (keep this from earlier)
+# user_context = st.text_area(...)
+
+if st.button("Ask AI for Explanation"):
+    with st.spinner("Analyzing burnout pattern..."):
+
+        prompt = f"""
+You are a mental health assistant helping a student understand burnout risk.
+
+Burnout metrics:
+- Sleep: {sleep} hours
+- Screen time: {screen} hours
+- Tasks today: {tasks}
+- Mood: {mood}/5
+- Burnout score: {burnout_score}/100
+- Burnout status: {status}
+
+User's self-described context:
+\"\"\"{user_context}\"\"\"
+
+Your tasks:
+1. Explain clearly why the burnout level is {status}.
+2. Identify the top 2–3 contributors.
+3. Give 3 realistic, actionable suggestions the student can do today.
+4. Keep the tone supportive, practical, and non-judgmental.
+"""
+
+        model = genai.GenerativeModel("gemini-2.5-flash")
+        response = model.generate_content(prompt)
+
+        st.markdown("#### 🧠 AI Insights")
+        st.write(response.text)

@@ -1,0 +1,10 @@
+[theme]
+# Inherit from Streamlit's built-in light or dark theme
+base = "light" # "light" or "dark"
+
+# Custom colors using HEX codes or named colors
+primaryColor = "#3b6df0"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#000000"
+font = "sans serif"
