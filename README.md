@@ -18,6 +18,12 @@ The focus is **clarity over motivation** and **control over guilt**.
 
 ---
 
+## 🎥 Demo Video
+
+https://drive.google.com/file/d/1praYvITEGCZ8HGz6DLNyGSbWfMyAuga8/view?usp=drive_link
+
+---
+
 ## 🚀 Core Features
 
 ### 🖥️ Student Dashboard (UI Module)
@@ -205,7 +211,7 @@ python -m http.server 8000
 Open in browser:
 
 ```
-http://localhost:8000/index.html?user=simi
+http://localhost:8000/login.html
 ```
 
 ---
