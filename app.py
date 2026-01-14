@@ -4,13 +4,9 @@ import numpy as np
 import openai
 import datetime
 import matplotlib.pyplot as plt
-
 import json
-from streamlit.web.server.websocket_headers import _get_websocket_headers
 
-headers = _get_websocket_headers()
-
-
+# -------- FIREBASE SETUP --------
 import firebase_admin
 from firebase_admin import credentials, firestore
 
@@ -20,23 +16,9 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
-import streamlit.components.v1 as components
-
+# -------- USER FROM QUERY PARAM --------
 params = st.query_params
 username = params.get("user")
-
-if params.get("api"):
-    today = datetime.date.today().isoformat()
-
-    doc = db.collection("users").document(username)\
-        .collection("burnout_logs").document(today).get()
-
-    if doc.exists:
-        st.json(doc.to_dict())
-    else:
-        st.json({})
-    st.stop()
-
 
 if not username:
     st.error("Not logged in. Please log in from the website.")
@@ -44,15 +26,13 @@ if not username:
 
 username = username.lower()
 
-
 # -------- CONFIG --------
 st.set_page_config(page_title="Burnout Radar", layout="centered")
 
 st.title("🧠 Burnout Radar")
 st.subheader("Predict burnout before it hits")
 
-# -------- INPUTS -----------
-
+# -------- INPUTS --------
 st.markdown("### Enter today’s data")
 
 col1, col2 = st.columns(2)
@@ -72,7 +52,6 @@ if st.button("😈 Simulate Bad Day"):
     mood = 2
 
 # -------- BURNOUT LOGIC --------
-
 sleep_score = max(0, (8 - sleep) / 8)
 screen_score = min(screen / 10, 1)
 task_score = min(tasks / 8, 1)
@@ -91,7 +70,6 @@ burnout_raw = (
 burnout_score = int(min(100, burnout_raw * 100))
 
 # -------- STATUS --------
-
 if burnout_score < 35:
     status = "Low"
     color = "🟢"
@@ -108,33 +86,50 @@ else:
 st.markdown(f"## Burnout Status: {color} **{status}**")
 st.info(message)
 
-# -------- FIREBASE SAVE --------
-today = datetime.date.today().isoformat()
+# -------- SEND DATA TO DASHBOARD (iframe → parent) --------
+from streamlit.components.v1 import html
 
-user_ref = db.collection("users").document(username).collection("burnout_logs")
+payload = {
+    "sleep": sleep,
+    "screen": screen,
+    "tasks": tasks,
+    "burnout": burnout_score,
+    "status": status
+}
 
-# Save only once per day
-if "last_saved" not in st.session_state:
-    st.session_state.last_saved = None
+html(f"""
+<script>
+window.parent.postMessage({json.dumps(payload)}, "*");
+</script>
+""", height=0)
 
-if st.session_state.last_saved != today:
-    user_ref.document(today).set({
-        "date": today,
-        "sleep": sleep,
-        "screen": screen,
-        "tasks": tasks,
-        "mood": mood,
-        "burnout": burnout_score,
-        "timestamp": firestore.SERVER_TIMESTAMP
-    })
-    st.session_state.last_saved = today
+# -------- SAVE BUTTON --------
+st.markdown("### 💾 Save Today’s Data")
+
+if st.button("Save to Firebase"):
+    today = datetime.date.today().isoformat()
+
+    db.collection("users") \
+      .document(username) \
+      .collection("burnout_logs") \
+      .document(today) \
+      .set({
+          "date": today,
+          "sleep": sleep,
+          "screen": screen,
+          "tasks": tasks,
+          "mood": mood,
+          "burnout": burnout_score,
+          "timestamp": firestore.SERVER_TIMESTAMP
+      })
+
+    st.success("Today's burnout data saved successfully!")
 
 # -------- LOAD HISTORY --------
+user_ref = db.collection("users").document(username).collection("burnout_logs")
 docs = user_ref.order_by("timestamp").stream()
 
-data = []
-for d in docs:
-    data.append(d.to_dict())
+data = [d.to_dict() for d in docs]
 
 if data:
     history = pd.DataFrame(data)
@@ -142,24 +137,17 @@ if data:
 else:
     history = pd.DataFrame(columns=["date", "burnout"])
 
-# -------- TABS --------
+# -------- INSIGHTS --------
 st.subheader("📊 Burnout Insights")
 
 tab1, tab2 = st.tabs(["📈 Trend", "🥧 Breakdown"])
 
-# -------- TREND --------
 with tab1:
     if not history.empty:
         st.line_chart(history.set_index("date")["burnout"])
-
-        if len(history) >= 3:
-            trend = history["burnout"].diff().mean()
-            tomorrow = min(100, max(0, burnout_score + trend))
-            st.metric("Tomorrow’s predicted burnout", int(tomorrow))
     else:
-        st.write("No data yet.")
+        st.write("No data yet. Save your first entry.")
 
-# -------- PIE --------
 with tab2:
     healthy = max(0, 100 - burnout_score)
     stress = min(burnout_score, 70)
@@ -181,6 +169,7 @@ with tab2:
     )
     ax.axis("equal")
     st.pyplot(fig)
+
 
 # -------- WHAT IF SIMULATION --------
 

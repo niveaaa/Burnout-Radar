@@ -80,23 +80,7 @@ if (storedUser) {
       <div class="card"><h4>WORKLOAD</h4><div class="val" id="taskVal">--</div></div>
     </div>
 
-    <script>
-fetch("http://localhost:8501?user=" + storedUser + "&api=1")
-  .then(res => res.json())
-  .then(data => {
-    if (!data || !data.sleep) return;
-
-    document.getElementById("sleepVal").innerText = data.sleep + " hrs";
-    document.getElementById("screenVal").innerText = data.screen + " hrs";
-
-    if (data.tasks <= 3) document.getElementById("taskVal").innerText = "Low";
-    else if (data.tasks <= 6) document.getElementById("taskVal").innerText = "Medium";
-    else document.getElementById("taskVal").innerText = "High";
-  });
-</script>
-
-
-
+    
 
 <br>
     <iframe id="aiFrame" style="width:100%;height:600px;border:none;border-radius: 20px;"></iframe>
@@ -171,6 +155,21 @@ if (storedUser) {
   </main>
 </div>
 
+<script>
+window.addEventListener("message", (event) => {
+  const data = event.data;
+  if (!data || !data.burnout) return;
+
+  document.getElementById("sleepVal").innerText = data.sleep + " hrs";
+  document.getElementById("screenVal").innerText = data.screen + " hrs";
+
+  document.getElementById("taskVal").innerText =
+    data.tasks <= 3 ? "Low" :
+    data.tasks <= 6 ? "Medium" : "High";
+
+  document.querySelector(".circle").innerText = data.burnout + "%";
+});
+</script>
 
 <script src="script.js"></script>
 </body>
