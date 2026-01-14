@@ -4,3 +4,4 @@ test.py
 burnout_history.csv
 frontend/
 firebase_key.json
+users_data/

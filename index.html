@@ -156,9 +156,14 @@ if (storedUser) {
 </div>
 
 <script>
-async function loadBurnoutData() {
+async function loadUserData() {
+  const user = localStorage.getItem("username");
+  if (!user) return;
+
   try {
-    const res = await fetch("latest_data.json");
+    const res = await fetch(`users_data/${user}.json`);
+    if (!res.ok) throw new Error("No data yet");
+
     const data = await res.json();
 
     document.getElementById("sleepVal").innerText = data.sleep + " hrs";
@@ -172,13 +177,13 @@ async function loadBurnoutData() {
     document.querySelector(".burnout h2").innerText =
       data.status + " Risk";
 
-  } catch (e) {
-    console.warn("Waiting for burnout data...");
+  } catch (err) {
+    console.warn("No saved data for user yet");
   }
 }
 
-loadBurnoutData();
-setInterval(loadBurnoutData, 2000);
+loadUserData();
+setInterval(loadUserData, 3000);
 </script>
 
 <script src="script.js"></script>

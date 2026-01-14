@@ -1,7 +1,8 @@
 import streamlit as st
-import pandas as pd
 import datetime
 import json
+import os
+import pandas as pd
 import matplotlib.pyplot as plt
 
 # -------- FIREBASE --------
@@ -26,10 +27,10 @@ username = username.lower()
 
 # -------- UI --------
 st.set_page_config(page_title="Burnout Radar", layout="centered")
-
 st.title("🧠 Burnout Radar")
 st.subheader("Predict burnout before it hits")
 
+# -------- INPUTS --------
 st.markdown("### Enter today’s data")
 
 col1, col2 = st.columns(2)
@@ -41,9 +42,6 @@ with col1:
 with col2:
     tasks = st.slider("📋 Tasks today", 0, 10, 3)
     mood = st.slider("🙂 Mood (1 = terrible, 5 = great)", 1, 5, 3)
-
-if st.button("😈 Simulate Bad Day"):
-    sleep, screen, tasks, mood = 4, 10, 7, 2
 
 # -------- BURNOUT LOGIC --------
 sleep_score = max(0, (8 - sleep) / 8)
@@ -70,42 +68,33 @@ else:
 
 st.metric("Burnout Score", burnout_score, status)
 
-# -------- WRITE LOCAL JSON (ALWAYS) --------
-latest_data = {
-    "user": username,
-    "sleep": sleep,
-    "screen": screen,
-    "tasks": tasks,
-    "mood": mood,
-    "burnout": burnout_score,
-    "status": status,
-    "date": datetime.date.today().isoformat()
-}
-
-with open("latest_data.json", "w") as f:
-    json.dump(latest_data, f, indent=2)
-
 # -------- SAVE BUTTON --------
 st.markdown("### 💾 Save Today’s Data")
 
 if st.button("Save to Firebase"):
+    today = datetime.date.today().isoformat()
+
+    data = {
+        "user": username,
+        "date": today,
+        "sleep": sleep,
+        "screen": screen,
+        "tasks": tasks,
+        "mood": mood,
+        "burnout": burnout_score,
+        "status": status
+    }
+
+    # 🔹 Save to Firebase
     db.collection("users") \
       .document(username) \
       .collection("burnout_logs") \
-      .document(latest_data["date"]) \
-      .set({
-          **latest_data,
-          "timestamp": firestore.SERVER_TIMESTAMP
-      })
+      .document(today) \
+      .set({**data, "timestamp": firestore.SERVER_TIMESTAMP})
 
-    st.success("Saved to Firebase + local JSON")
+    # 🔹 Save to USER-SPECIFIC JSON
+    os.makedirs("users_data", exist_ok=True)
+    with open(f"users_data/{username}.json", "w") as f:
+        json.dump(data, f, indent=2)
 
-# -------- HISTORY (OPTIONAL) --------
-user_ref = db.collection("users").document(username).collection("burnout_logs")
-docs = user_ref.order_by("timestamp").stream()
-data = [d.to_dict() for d in docs]
-
-if data:
-    df = pd.DataFrame(data)
-    df["date"] = pd.to_datetime(df["date"])
-    st.line_chart(df.set_index("date")["burnout"])
+    st.success("Saved to Firebase and local JSON")
