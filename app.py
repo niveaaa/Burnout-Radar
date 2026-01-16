@@ -5,10 +5,14 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
 import os
 
-genai.configure(api_key="AIzaSyDPvqIpXxMrjtJ1g2EGZurLDRlZsb5aSAg")
+load_dotenv()
+API_KEY = os.getenv("GEMINI_API_KEY")
+
+#genai.configure(api_key=API_KEY)
+client = genai.Client(api_key=API_KEY)
 
 # -------- FIREBASE --------
 import firebase_admin
@@ -211,8 +215,10 @@ Your tasks:
 4. Keep the tone supportive, practical, and non-judgmental.
 """
 
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=prompt,
+        )
 
         st.markdown("#### 🧠 AI Insights")
         st.write(response.text)
