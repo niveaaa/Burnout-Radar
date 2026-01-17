@@ -197,7 +197,7 @@ function login(){
   const u = document.getElementById("username").value;
   const p = document.getElementById("password").value;
 
-  if((u === "Simi" && p === "1234")||(u === "nauman" && p === "1234")){
+  if((u === "Simi" && p === "1234")||(u === "nauman" && p === "1234")||(u === "mastikhor" && p === "1234")){
     localStorage.setItem("loggedIn","true");
     window.location.href = "index.html?user=" + u;
   }else{
